@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Browser - HomeServer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .nav a {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .nav a:hover {
+            background: #2a2a2a;
+            border-color: #667eea;
+        }
+
+        .browser-section {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .path-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .path-segment {
+            padding: 6px 12px;
+            background: #2a2a2a;
+            border-radius: 6px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .path-segment:hover {
+            background: #667eea;
+        }
+
+        .path-separator {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .root-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .root-btn {
+            padding: 10px 16px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            color: #e0e0e0;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .root-btn:hover {
+            background: #667eea;
+            border-color: #667eea;
+        }
+
+        .items-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            padding: 12px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px 8px 0 0;
+            font-size: 0.85em;
+            color: #808080;
+            font-weight: 600;
+        }
+
+        .items-list {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #2a2a2a;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+        }
+
+        .item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            padding: 14px 12px;
+            background: #0a0a0a;
+            border-bottom: 1px solid #2a2a2a;
+            cursor: pointer;
+            transition: all 0.2s;
+            align-items: center;
+        }
+
+        .item:hover {
+            background: #1a1a1a;
+            border-color: #667eea;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .item-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .item.directory .item-name {
+            color: #667eea;
+        }
+
+        .item-size, .item-modified, .item-perms {
+            font-size: 0.9em;
+            color: #a0a0a0;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            color: #e0e0e0;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #667eea;
+            border-color: #667eea;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #808080;
+        }
+
+        .status-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s;
+        }
+
+        .status-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .status-message.success {
+            border-color: #4caf50;
+            color: #4caf50;
+        }
+
+        .status-message.error {
+            border-color: #f44336;
+            color: #f44336;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #808080;
+        }
+
+        @media (max-width: 768px) {
+            .items-header, .item {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .item-size, .item-modified, .item-perms {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status-message" id="statusMessage"></div>
+
+    <div class="container">
+        <h1>File Browser</h1>
+
+        <div class="nav">
+            <a href="/static/dashboard.html">Dashboard</a>
+            <a href="/static/files.html">File Manager</a>
+            <a href="/static/browser.html">File Browser</a>
+        </div>
+
+        <div class="browser-section">
+            <!-- Root selector -->
+            <div class="root-selector" id="rootSelector"></div>
+
+            <!-- Path bar -->
+            <div class="path-bar" id="pathBar">
+                <span style="color: #667eea;">Select a location to browse</span>
+            </div>
+
+            <!-- Items header -->
+            <div class="items-header">
+                <div>Name</div>
+                <div>Size</div>
+                <div>Modified</div>
+                <div>Permissions</div>
+            </div>
+
+            <!-- Items list -->
+            <div class="items-list" id="itemsList">
+                <div class="empty-state">
+                    <p>Select a root location above to start browsing</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/v1/browser';
+        let currentPath = null;
+
+        // Show status message
+        function showStatus(message, type = 'success') {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message ${type} show`;
+
+            setTimeout(() => {
+                statusEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // Format file size
+        function formatSize(bytes) {
+            if (bytes === null || bytes === undefined) return '-';
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+
+        // Get folder icon SVG
+        function getFolderIcon() {
+            return `<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" width="20" height="20">
+                <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 12.5v-9z"/>
+            </svg>`;
+        }
+
+        // Get file icon SVG
+        function getFileIcon() {
+            return `<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" width="20" height="20">
+                <path d="M4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4zm0 1h8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/>
+            </svg>`;
+        }
+
+        // Load root paths
+        async function loadRoots() {
+            try {
+                const response = await fetch(`${API_BASE}/roots`);
+                const roots = await response.json();
+
+                const rootSelector = document.getElementById('rootSelector');
+                rootSelector.innerHTML = roots.map(root => `
+                    <button class="root-btn" onclick="browseDirectory('${root}')">
+                        ${root}
+                    </button>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load roots:', error);
+                showStatus('Failed to load root paths', 'error');
+            }
+        }
+
+        // Render path bar
+        function renderPathBar(path) {
+            const pathBar = document.getElementById('pathBar');
+            const parts = path.split('/').filter(p => p);
+
+            if (parts.length === 0) {
+                pathBar.innerHTML = '<span class="path-segment" onclick="browseDirectory(\'/\')">Root</span>';
+                return;
+            }
+
+            let html = '<span class="path-segment" onclick="browseDirectory(\'/\')">Root</span>';
+            let currentPath = '';
+
+            parts.forEach((part, index) => {
+                currentPath += '/' + part;
+                const clickPath = currentPath;
+                html += '<span class="path-separator">/</span>';
+                html += `<span class="path-segment" onclick="browseDirectory('${clickPath}')">${part}</span>`;
+            });
+
+            pathBar.innerHTML = html;
+        }
+
+        // Browse directory
+        async function browseDirectory(path) {
+            currentPath = path;
+            renderPathBar(path);
+
+            const itemsList = document.getElementById('itemsList');
+            itemsList.innerHTML = '<div class="loading">Loading...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/list?path=${encodeURIComponent(path)}`);
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to load directory');
+                }
+
+                const data = await response.json();
+
+                if (data.items.length === 0) {
+                    itemsList.innerHTML = '<div class="empty-state"><p>This directory is empty</p></div>';
+                    return;
+                }
+
+                itemsList.innerHTML = data.items.map(item => `
+                    <div class="item ${item.is_directory ? 'directory' : 'file'}"
+                         onclick="${item.is_directory ? `browseDirectory('${item.path}')` : ''}">
+                        <div class="item-name">
+                            <div class="item-icon">
+                                ${item.is_directory ? getFolderIcon() : getFileIcon()}
+                            </div>
+                            ${item.name}
+                        </div>
+                        <div class="item-size">${formatSize(item.size)}</div>
+                        <div class="item-modified">${formatDate(item.modified)}</div>
+                        <div class="item-perms">${item.permissions || '-'}</div>
+                        ${!item.is_directory && item.is_readable ? `
+                            <button class="action-btn" onclick="event.stopPropagation(); downloadFile('${item.path}', '${item.name}')">
+                                Download
+                            </button>
+                        ` : ''}
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Failed to browse directory:', error);
+                showStatus(error.message, 'error');
+                itemsList.innerHTML = `<div class="empty-state"><p style="color: #f44336;">${error.message}</p></div>`;
+            }
+        }
+
+        // Download file
+        function downloadFile(path, filename) {
+            try {
+                const url = `${API_BASE}/download?path=${encodeURIComponent(path)}`;
+                window.location.href = url;
+                showStatus(`Downloading ${filename}...`, 'success');
+            } catch (error) {
+                console.error('Download failed:', error);
+                showStatus('Download failed', 'error');
+            }
+        }
+
+        // Load root paths on page load
+        loadRoots();
+    </script>
+</body>
+</html>

@@ -36,6 +36,8 @@ services:
       - ./src:/app/src
       # Mount external drive for file storage
       - /Volumes/allDaStuffs/homeserver/storage:/app/storage
+      # Mount entire external drive for file browsing
+      - /Volumes/allDaStuffs:/Volumes/allDaStuffs:ro
       # Mount for media files (will add path later)
       # - /Volumes/allDaStuffs/homeserver/media:/app/media
     restart: unless-stopped

@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from src.api.browser import router as browser_router
 from src.api.files import router as files_router
 from src.api.monitoring import router as monitoring_router
 from src.config import settings
@@ -18,6 +19,7 @@ app = FastAPI(
 # Include routers
 app.include_router(files_router)
 app.include_router(monitoring_router)
+app.include_router(browser_router)
 
 # Mount static files for dashboard
 app.mount("/static", StaticFiles(directory="src/static"), name="static")
@@ -54,6 +56,7 @@ async def api_info() -> dict[str, str | dict[str, str]]:
         "services": {
             "media": "planned",
             "files": "active",
+            "browser": "active",
             "automation": "planned",
             "ai": "planned",
             "monitoring": "active",
