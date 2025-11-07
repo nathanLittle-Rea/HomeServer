@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: homeserver-postgres
+    environment:
+      POSTGRES_USER: homeserver
+      POSTGRES_PASSWORD: homeserver_dev_password
+      POSTGRES_DB: homeserver
+    volumes:
+      # Store database on external drive for persistence
+      - /Volumes/allDaStuffs/homeserver/postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U homeserver"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - homeserver-network
+
+  homeserver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: homeserver
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # Mount source code for development (hot reload)
+      - ./src:/app/src
+      # Mount external drive for file storage
+      - /Volumes/allDaStuffs/homeserver/storage:/app/storage
+      # Mount for media files (will add path later)
+      # - /Volumes/allDaStuffs/homeserver/media:/app/media
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    networks:
+      - homeserver-network
+
+networks:
+  homeserver-network:
+    driver: bridge

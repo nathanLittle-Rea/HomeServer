@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Manager - HomeServer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .nav a {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .nav a:hover {
+            background: #2a2a2a;
+            border-color: #667eea;
+        }
+
+        .upload-section {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #2a2a2a;
+            margin-bottom: 30px;
+        }
+
+        .upload-section h2 {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: #a0a0a0;
+            font-weight: 500;
+        }
+
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            background: #0a0a0a;
+            border: 2px dashed #2a2a2a;
+            border-radius: 8px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        input[type="file"]:hover {
+            border-color: #667eea;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 0.95em;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .files-section {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .files-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .files-header h2 {
+            font-size: 1.2em;
+            color: #a0a0a0;
+            font-weight: 500;
+        }
+
+        .refresh-btn {
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .files-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .file-item:hover {
+            border-color: #667eea;
+            background: #151515;
+        }
+
+        .file-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .file-name {
+            font-size: 1.05em;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .file-meta {
+            font-size: 0.85em;
+            color: #808080;
+        }
+
+        .file-tags {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 4px 10px;
+            background: #667eea22;
+            border: 1px solid #667eea44;
+            border-radius: 12px;
+            font-size: 0.75em;
+            color: #a0a0ff;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            font-size: 0.85em;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+        }
+
+        .action-btn.danger {
+            background: #4a1a1a;
+            border-color: #6a2a2a;
+        }
+
+        .action-btn.danger:hover {
+            background: #5a2a2a;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #808080;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .status-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s;
+        }
+
+        .status-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .status-message.success {
+            border-color: #4caf50;
+            color: #4caf50;
+        }
+
+        .status-message.error {
+            border-color: #f44336;
+            color: #f44336;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+            }
+
+            .file-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .file-actions {
+                width: 100%;
+            }
+
+            .action-btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status-message" id="statusMessage"></div>
+
+    <div class="container">
+        <h1>File Manager</h1>
+
+        <div class="nav">
+            <a href="/static/dashboard.html">Dashboard</a>
+            <a href="/static/files.html">File Manager</a>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <h2>Upload File</h2>
+            <form class="upload-form" id="uploadForm">
+                <div class="form-row">
+                    <div class="file-input-wrapper">
+                        <input type="file" id="fileInput" required>
+                    </div>
+                    <input type="text" id="tagsInput" placeholder="Tags (comma-separated, optional)">
+                    <button type="submit" id="uploadBtn">Upload</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Files Section -->
+        <div class="files-section">
+            <div class="files-header">
+                <h2>Your Files (<span id="fileCount">0</span>)</h2>
+                <button class="refresh-btn" onclick="loadFiles()">Refresh</button>
+            </div>
+            <div class="files-list" id="filesList">
+                <div class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    <p>No files uploaded yet</p>
+                    <p style="font-size: 0.85em; margin-top: 8px;">Upload your first file to get started</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/v1/files';
+
+        // Show status message
+        function showStatus(message, type = 'success') {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message ${type} show`;
+
+            setTimeout(() => {
+                statusEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // Format file size
+        function formatSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString();
+        }
+
+        // Load files from API
+        async function loadFiles() {
+            try {
+                const response = await fetch(`${API_BASE}/list`);
+                const data = await response.json();
+
+                const filesList = document.getElementById('filesList');
+                const fileCount = document.getElementById('fileCount');
+
+                fileCount.textContent = data.total;
+
+                if (data.total === 0) {
+                    filesList.innerHTML = `
+                        <div class="empty-state">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                            <p>No files uploaded yet</p>
+                            <p style="font-size: 0.85em; margin-top: 8px;">Upload your first file to get started</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                filesList.innerHTML = data.files.map(file => `
+                    <div class="file-item">
+                        <div class="file-info">
+                            <div class="file-name">${file.filename}</div>
+                            <div class="file-meta">
+                                ${formatSize(file.size)} • ${formatDate(file.upload_date)}
+                            </div>
+                            ${file.tags && file.tags.length > 0 ? `
+                                <div class="file-tags">
+                                    ${file.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="file-actions">
+                            <button class="action-btn" onclick="downloadFile('${file.id}', '${file.filename}')">Download</button>
+                            <button class="action-btn danger" onclick="deleteFile('${file.id}', '${file.filename}')">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load files:', error);
+                showStatus('Failed to load files', 'error');
+            }
+        }
+
+        // Upload file
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('fileInput');
+            const tagsInput = document.getElementById('tagsInput');
+            const uploadBtn = document.getElementById('uploadBtn');
+
+            if (!fileInput.files.length) {
+                showStatus('Please select a file', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            if (tagsInput.value.trim()) {
+                formData.append('tags', tagsInput.value.trim());
+            }
+
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading...';
+
+            try {
+                const response = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Upload failed');
+                }
+
+                const data = await response.json();
+                showStatus(`${data.filename} uploaded successfully!`, 'success');
+
+                // Reset form
+                fileInput.value = '';
+                tagsInput.value = '';
+
+                // Reload files
+                await loadFiles();
+            } catch (error) {
+                console.error('Upload failed:', error);
+                showStatus('Upload failed', 'error');
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload';
+            }
+        });
+
+        // Download file
+        async function downloadFile(fileId, filename) {
+            try {
+                window.location.href = `${API_BASE}/${fileId}/download`;
+                showStatus(`Downloading ${filename}...`, 'success');
+            } catch (error) {
+                console.error('Download failed:', error);
+                showStatus('Download failed', 'error');
+            }
+        }
+
+        // Delete file
+        async function deleteFile(fileId, filename) {
+            if (!confirm(`Are you sure you want to delete "${filename}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/${fileId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Delete failed');
+                }
+
+                showStatus(`${filename} deleted`, 'success');
+                await loadFiles();
+            } catch (error) {
+                console.error('Delete failed:', error);
+                showStatus('Delete failed', 'error');
+            }
+        }
+
+        // Load files on page load
+        loadFiles();
+    </script>
+</body>
+</html>

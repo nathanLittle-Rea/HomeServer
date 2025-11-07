@@ -1,0 +1,39 @@
+"""Configuration management for HomeServer."""
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """Application settings loaded from environment variables."""
+
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", case_sensitive=False
+    )
+
+    # Application
+    app_name: str = "HomeServer"
+    app_version: str = "0.1.0"
+    debug: bool = False
+
+    # Server
+    host: str = "0.0.0.0"
+    port: int = 8000
+
+    # AWS
+    aws_region: str = "us-east-1"
+    aws_access_key_id: str = ""
+    aws_secret_access_key: str = ""
+    dynamodb_table_prefix: str = "homeserver"
+
+    # Security
+    api_key: str = "dev-key-change-in-production"
+
+    # Storage
+    storage_path: str = "/app/storage"  # Path inside container
+
+    # Database
+    database_url: str = "postgresql+asyncpg://homeserver:homeserver_dev_password@postgres:5432/homeserver"
+
+
+# Global settings instance
+settings = Settings()

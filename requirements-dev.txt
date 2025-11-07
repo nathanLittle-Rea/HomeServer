@@ -1,0 +1,14 @@
+# Testing
+pytest==8.3.4
+pytest-asyncio==0.24.0
+pytest-cov==6.0.0
+pytest-mock==3.14.0
+
+# Code quality
+black==24.10.0
+ruff==0.8.2
+mypy==1.13.0
+
+# Type stubs
+boto3-stubs[dynamodb]==1.35.68
+types-aiofiles==24.1.0.20241221

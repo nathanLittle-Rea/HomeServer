@@ -1,0 +1,27 @@
+# Web Framework
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+pydantic>=2.8.0
+pydantic-settings==2.6.1
+python-multipart==0.0.20
+
+# AWS SDK (version pinning for compatibility)
+boto3==1.35.36
+aioboto3==13.2.0
+
+# Async support
+aiofiles==24.1.0
+
+# Environment variables
+python-dotenv==1.0.1
+
+# HTTP client
+httpx==0.28.1
+
+# Database
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+alembic==1.14.0
+
+# Monitoring
+psutil==6.1.1
