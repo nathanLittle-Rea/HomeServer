@@ -5,6 +5,8 @@
 This is a home server application for [describe your use case].
 
 ## Details
+
+### First Commit
   🎉 https://github.com/nathanLittle-Rea/HomeServer
 
   What was pushed:
@@ -28,6 +30,42 @@ This is a home server application for [describe your use case].
   3. Make changes and push: git add . && git commit -m "message" && git push
   4. Share it with others
   5. Add topics/tags to make it discoverable
+  
+### Second Commit
+
+  What we built:
+  - Complete file browser for exploring your external drive and file system
+  - Browse directories, view metadata, and download files
+  - Read-only access to /Volumes/allDaStuffs
+  - Beautiful dark-themed UI with breadcrumb navigation
+
+  Features:
+  - 📁 Directory Navigation - Click folders to browse, breadcrumb path to go back
+  - 📊 File Metadata - View size, modified date, and permissions
+  - ⬇️ Download - Download any file with one click
+  - 🔒 Permission Control - Only browse allowed paths
+  - 🎨 Consistent UI - Matches dashboard and file manager design
+  - 🔗 Navigation Links - Easy switching between all three pages
+
+  API Endpoints:
+  - GET /api/v1/browser/roots - List allowed root paths
+  - GET /api/v1/browser/list?path=... - List directory contents
+  - GET /api/v1/browser/info?path=... - Get file metadata
+  - GET /api/v1/browser/download?path=... - Download file
+
+  Access:
+  - Local: http://localhost:8000/static/browser.html
+  - Network: http://192.168.0.40:8000/static/browser.html
+
+  GitHub:
+  - Branch: refinement
+  - Commit: Added file browser with 891 insertions across 9 files
+  - Push URL: https://github.com/nathanLittle-Rea/HomeServer/pull/new/refinement
+
+  Now you have 3 interfaces:
+  1. Dashboard - Real-time monitoring (CPU, memory, disk, files)
+  2. File Manager - Upload and manage files via API
+  3. File Browser - Browse and download existing files on external drive  
 
 ## Tech Stack
 <!-- Update with your actual stack -->

@@ -2,10 +2,12 @@
 
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 
 from src.config import settings
+from src.dependencies import get_current_active_user
+from src.models.auth import User
 from src.models.browser import DirectoryListing, FileSystemItem
 from src.services.browser import FileBrowserService
 
@@ -25,6 +27,7 @@ file_browser = FileBrowserService(allowed_paths=allowed_paths)
 @router.get("/list", response_model=DirectoryListing)
 async def list_directory(
     path: str = Query(..., description="Directory path to list"),
+    current_user: User = Depends(get_current_active_user),
 ) -> DirectoryListing:
     """List contents of a directory.
 
@@ -52,6 +55,7 @@ async def list_directory(
 @router.get("/info", response_model=FileSystemItem)
 async def get_file_info(
     path: str = Query(..., description="File or directory path"),
+    current_user: User = Depends(get_current_active_user),
 ) -> FileSystemItem:
     """Get metadata for a file or directory.
 
@@ -77,6 +81,7 @@ async def get_file_info(
 @router.get("/download")
 async def download_file(
     path: str = Query(..., description="File path to download"),
+    current_user: User = Depends(get_current_active_user),
 ) -> StreamingResponse:
     """Download a file from the file system.
 
@@ -111,7 +116,9 @@ async def download_file(
 
 
 @router.get("/roots", response_model=list[str])
-async def get_root_paths() -> list[str]:
+async def get_root_paths(
+    current_user: User = Depends(get_current_active_user),
+) -> list[str]:
     """Get list of allowed root paths for browsing.
 
     Returns:

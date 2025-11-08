@@ -27,6 +27,9 @@ class Settings(BaseSettings):
 
     # Security
     api_key: str = "dev-key-change-in-production"
+    secret_key: str = "change-this-to-random-secret-key-in-production"
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60 * 24  # 24 hours
 
     # Storage
     storage_path: str = "/app/storage"  # Path inside container

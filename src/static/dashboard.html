@@ -131,16 +131,115 @@
         .connection-status.disconnected {
             border-color: #f44336;
         }
+
+        .user-profile {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 12px 20px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 20px;
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .user-email {
+            font-size: 0.85em;
+            color: #808080;
+        }
+
+        .logout-btn {
+            padding: 6px 12px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            color: #e0e0e0;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #3a3a3a;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            padding: 10px 20px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background: #2a2a2a;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
+    <div class="user-profile" id="userProfile" style="display: none;">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <div class="user-info">
+            <div class="user-name" id="userName">Loading...</div>
+            <div class="user-email" id="userEmail"></div>
+        </div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
     <div class="connection-status" id="connectionStatus">
         <span class="status-indicator"></span>
         <span id="statusText">Connecting...</span>
     </div>
 
     <div class="container">
-        <h1>HomeServer Dashboard</h1>
+        <div class="header-section">
+            <h1>HomeServer Dashboard</h1>
+            <div class="nav-links">
+                <a href="/files.html" class="nav-link">Files</a>
+                <a href="/browser.html" class="nav-link">Browser</a>
+            </div>
+        </div>
 
         <div class="grid">
             <!-- System Resources -->
@@ -215,9 +314,49 @@
     </div>
 
     <script>
+        // Authentication check
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
+        // Fetch and display user info
+        async function fetchUserInfo() {
+            try {
+                const response = await fetch('/api/v1/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    document.getElementById('userName').textContent = user.username;
+                    document.getElementById('userEmail').textContent = user.email;
+                    document.getElementById('userAvatar').textContent = user.username.charAt(0).toUpperCase();
+                    document.getElementById('userProfile').style.display = 'flex';
+                } else if (response.status === 401) {
+                    // Token is invalid, redirect to login
+                    logout();
+                }
+            } catch (error) {
+                console.error('Error fetching user info:', error);
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('token_type');
+            window.location.href = '/login.html';
+        }
+
+        // Fetch user info on page load
+        fetchUserInfo();
+
         // WebSocket connection
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}/api/v1/monitoring/ws`;
+        const wsUrl = `${protocol}//${window.location.host}/api/v1/monitoring/ws?token=${token}`;
         let ws;
         let reconnectTimeout;
 

@@ -4,6 +4,7 @@ uvicorn[standard]==0.32.1
 pydantic>=2.8.0
 pydantic-settings==2.6.1
 python-multipart==0.0.20
+email-validator==2.2.0
 
 # AWS SDK (version pinning for compatibility)
 boto3==1.35.36
@@ -21,7 +22,14 @@ httpx==0.28.1
 # Database
 sqlalchemy[asyncio]==2.0.36
 asyncpg==0.30.0
+psycopg2-binary==2.9.10
 alembic==1.14.0
 
 # Monitoring
 psutil==6.1.1
+
+# Authentication
+python-jose[cryptography]==3.3.0
+passlib==1.7.4
+bcrypt==4.1.3
+python-multipart==0.0.20

@@ -8,6 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
 from src.database import get_db
+from src.dependencies import get_current_active_user
+from src.models.auth import User
 from src.models.files import (
     FileDeleteResponse,
     FileListResponse,
@@ -27,6 +29,7 @@ file_service = FileStorageService(storage_path=settings.storage_path)
 async def upload_file(
     file: UploadFile = File(...),
     tags: Optional[str] = Form(None),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ) -> FileUploadResponse:
     """Upload a file to the storage service.
@@ -64,6 +67,7 @@ async def upload_file(
 @router.get("/list", response_model=FileListResponse)
 async def list_files(
     tag: Optional[str] = None,
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ) -> FileListResponse:
     """List all files, optionally filtered by tag.
@@ -86,6 +90,7 @@ async def list_files(
 @router.get("/{file_id}/metadata", response_model=FileMetadata)
 async def get_file_metadata(
     file_id: str,
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ) -> FileMetadata:
     """Get metadata for a specific file.
@@ -110,6 +115,7 @@ async def get_file_metadata(
 @router.get("/{file_id}/download")
 async def download_file(
     file_id: str,
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ) -> StreamingResponse:
     """Download a file.
@@ -142,6 +148,7 @@ async def download_file(
 @router.delete("/{file_id}", response_model=FileDeleteResponse)
 async def delete_file(
     file_id: str,
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ) -> FileDeleteResponse:
     """Delete a file.
