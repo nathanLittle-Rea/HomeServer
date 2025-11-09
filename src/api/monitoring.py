@@ -91,7 +91,7 @@ async def websocket_endpoint(
         await websocket.close(code=4001, reason="Invalid or expired token")
         return
 
-    user_id: int = payload.get("sub")
+    user_id: int = payload.get("user_id")
     if not user_id:
         await websocket.close(code=4001, reason="Invalid token payload")
         return

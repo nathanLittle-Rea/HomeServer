@@ -349,6 +349,12 @@
     </div>
 
     <script>
+        // Authentication check
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
         const API_BASE = '/api/v1/files';
 
         // Show status message
@@ -380,7 +386,11 @@
         // Load files from API
         async function loadFiles() {
             try {
-                const response = await fetch(`${API_BASE}/list`);
+                const response = await fetch(`${API_BASE}/list`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
                 const data = await response.json();
 
                 const filesList = document.getElementById('filesList');
@@ -451,6 +461,9 @@
             try {
                 const response = await fetch(`${API_BASE}/upload`, {
                     method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: formData
                 });
 
@@ -479,8 +492,27 @@
         // Download file
         async function downloadFile(fileId, filename) {
             try {
-                window.location.href = `${API_BASE}/${fileId}/download`;
                 showStatus(`Downloading ${filename}...`, 'success');
+                const response = await fetch(`${API_BASE}/${fileId}/download`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Download failed');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                showStatus(`Downloaded ${filename}`, 'success');
             } catch (error) {
                 console.error('Download failed:', error);
                 showStatus('Download failed', 'error');
@@ -495,7 +527,10 @@
 
             try {
                 const response = await fetch(`${API_BASE}/${fileId}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
                 });
 
                 if (!response.ok) {

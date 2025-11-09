@@ -294,6 +294,12 @@
     </div>
 
     <script>
+        // Authentication check
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
         const API_BASE = '/api/v1/browser';
         let currentPath = null;
 
@@ -342,7 +348,11 @@
         // Load root paths
         async function loadRoots() {
             try {
-                const response = await fetch(`${API_BASE}/roots`);
+                const response = await fetch(`${API_BASE}/roots`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
                 const roots = await response.json();
 
                 const rootSelector = document.getElementById('rootSelector');
@@ -389,7 +399,11 @@
             itemsList.innerHTML = '<div class="loading">Loading...</div>';
 
             try {
-                const response = await fetch(`${API_BASE}/list?path=${encodeURIComponent(path)}`);
+                const response = await fetch(`${API_BASE}/list?path=${encodeURIComponent(path)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
 
                 if (!response.ok) {
                     const error = await response.json();
@@ -431,11 +445,30 @@
         }
 
         // Download file
-        function downloadFile(path, filename) {
+        async function downloadFile(path, filename) {
             try {
-                const url = `${API_BASE}/download?path=${encodeURIComponent(path)}`;
-                window.location.href = url;
                 showStatus(`Downloading ${filename}...`, 'success');
+                const url = `${API_BASE}/download?path=${encodeURIComponent(path)}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Download failed');
+                }
+
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(downloadUrl);
+                document.body.removeChild(a);
+                showStatus(`Downloaded ${filename}`, 'success');
             } catch (error) {
                 console.error('Download failed:', error);
                 showStatus('Download failed', 'error');
